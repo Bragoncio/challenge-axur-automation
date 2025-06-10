@@ -23,3 +23,19 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+
+Cypress.Commands.add('buscarProdutoNaAmazon', (nomeProduto) => {
+    cy.get('#twotabsearchtextbox')
+      .clear()
+      .type(`${nomeProduto}{enter}`);
+  });
+  
+
+  Cypress.Commands.overwrite('visit', (originalVisit, url, options) => {
+    return cy.intercept({ resourceType: /xhr|fetch/ }, { log: false }).then(() => {
+      return originalVisit(url, options);
+    });
+  });
+  
+  
