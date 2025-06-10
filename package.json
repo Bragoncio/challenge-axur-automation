@@ -1,0 +1,23 @@
+{
+    "name": "challenge-axur-automation",
+    "version": "1.0.0",
+    "description": "Projeto de Automação Desafio Challenge Axur",
+    "main": "index.js",
+    "scripts": {
+        "test": "npx cypress open"
+    },
+    "keywords": [
+        "Axur",
+        "Cypress",
+        "Web",
+        "Api",
+        "Challenge"
+    ],
+    "author": "Leonardo Braga Protasio",
+    "license": "ISC",
+    "devDependencies": {
+        "@faker-js/faker": "^9.8.0",
+        "@types/cypress": "^1.1.3",
+        "cypress": "^14.4.0"
+    }
+}
