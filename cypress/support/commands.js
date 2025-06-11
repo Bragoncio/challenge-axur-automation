@@ -24,18 +24,34 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+Cypress.Commands.overwrite('visit', (originalVisit, url, options) => {
+  return cy.intercept({ resourceType: /xhr|fetch/ }, { log: false }).then(() => {
+    return originalVisit(url, options);
+  });
+});
+
 
 Cypress.Commands.add('buscarProdutoNaAmazon', (nomeProduto) => {
-    cy.get('#twotabsearchtextbox')
-      .clear()
-      .type(`${nomeProduto}{enter}`);
-  });
-  
+  cy.get('#twotabsearchtextbox', { timeout: 10000 })
+    .should('be.visible')
+    .clear()
+    .type(`${nomeProduto}{enter}`);
 
-  Cypress.Commands.overwrite('visit', (originalVisit, url, options) => {
-    return cy.intercept({ resourceType: /xhr|fetch/ }, { log: false }).then(() => {
-      return originalVisit(url, options);
+  cy.get('.s-main-slot', { timeout: 15000 }).should('be.visible');
+});
+  
+  Cypress.Commands.add('selecionarProdutoPorNome', (palavrasChave = []) => {
+    cy.get('[data-cy="asin-faceout-container"]').each(($el) => {
+      const titulo = $el.text().toLowerCase();
+  
+      const todasPresentes = palavrasChave.every(palavra =>
+        titulo.includes(palavra.toLowerCase())
+      );
+  
+      if (todasPresentes) {
+        cy.wrap($el).find('a').first().click();
+        return false;
+      }
     });
   });
-  
   
