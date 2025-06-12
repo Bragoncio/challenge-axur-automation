@@ -54,12 +54,7 @@ Cypress.Commands.add('selecionarProdutoPorNome', (palavrasChave = []) => {
 });
 
 Cypress.Commands.add('adicionarProdutoAoCarrinho', (quantidadeAdicionar = 1) => {
-  const quantidadeAnterior = Cypress.env('quantidadeCarrinho') || 0;
-  const quantidadeTotalCalculada = quantidadeAnterior + quantidadeAdicionar;
-
-  cy.log(`Quantidade anterior no carrinho (salva): ${quantidadeAnterior}`);
-  cy.log(`Quantidade que será adicionada agora: ${quantidadeAdicionar}`);
-  cy.log(`Quantidade total calculada para valor esperado: ${quantidadeTotalCalculada}`);
+  Cypress.env('quantidadeCarrinho', quantidadeAdicionar);
 
   if (quantidadeAdicionar > 1) {
     cy.get('span.a-dropdown-label', { log: false })
@@ -73,63 +68,82 @@ Cypress.Commands.add('adicionarProdutoAoCarrinho', (quantidadeAdicionar = 1) => 
       .click({ log: false });
   }
 
-  cy.get('.a-price .a-offscreen', { log: false }).first()
-    .invoke('text')
-    .then((precoTexto) => {
-      const precoUnitario = parseFloat(
-        precoTexto.replace('R$', '').replace(/\s/g, '').replace(',', '.')
-      );
-      const valorTotalEsperado = precoUnitario * quantidadeTotalCalculada;
-
-      Cypress.env('valorTotalEsperado', valorTotalEsperado);
-
-      cy.log(`Valor unitário capturado: R$ ${precoUnitario.toFixed(2)}`);
-      cy.log(`Quantidade adicionada ao carrinho agora: ${quantidadeAdicionar}`);
-      cy.log(`Quantidade total calculada para validar valor: ${quantidadeTotalCalculada}`);
-      cy.log(`Valor total esperado calculado (unitário x total calculado): R$ ${valorTotalEsperado.toFixed(2)}`);
-
-      Cypress.env('quantidadeCarrinho', quantidadeTotalCalculada);
-    });
-
   cy.get('#add-to-cart-button', { log: false }).click({ log: false });
-});
 
-
-
-Cypress.Commands.add('validarValorCarrinho', () => {
-  const valorEsperado = Cypress.env('valorTotalEsperado');
-
-  cy.get('#sw-subtotal', { log: false })
-    .find('.a-offscreen', { log: false })
-    .invoke('text')
-    .then((textoSubtotal) => {
-      const valorCarrinho = parseFloat(
-        textoSubtotal.replace('R$', '').replace(/\s/g, '').replace(',', '.')
-      );
-
-      cy.log(`Valor no carrinho: R$ ${valorCarrinho.toFixed(2)}`);
-      cy.log(`Valor esperado: R$ ${valorEsperado.toFixed(2)}`);
-
-      expect(valorCarrinho).to.eq(valorEsperado);
-    });
-});
-
-Cypress.Commands.add('validarMensagemAdicionadoCarrinho', () => {
   cy.get('#NATC_SMART_WAGON_CONF_MSG_SUCCESS', { timeout: 10000 })
     .should('be.visible')
     .within(() => {
       cy.get('h1.sw-atc-text').should('contain.text', 'Adicionado ao carrinho');
     });
+
+  cy.contains('a.a-button-text', 'Ir para o carrinho').click();
 });
 
-Cypress.Commands.add('voltarParaPaginaProduto', () => {
-  const urlProduto = Cypress.env('urlProduto');
-  if (urlProduto) {
-    cy.visit(urlProduto);
-  } else {
-    throw new Error('URL do produto não está definida no Cypress.env');
+Cypress.Commands.add('validarValorCarrinho', () => {
+  const quantidadeEsperada = Cypress.env('quantidadeCarrinho');
+
+  if (!quantidadeEsperada) {
+    throw new Error('Quantidade esperada não definida no Cypress.env.quantidadeCarrinho');
   }
+
+  cy.get('.sc-item-price-block', { timeout: 10000 })
+    .first()
+    .invoke('text')
+    .then((valorBaseTexto) => {
+      const valorUnitario = parseFloat(
+        valorBaseTexto.replace('R$', '').replace(/\s/g, '').replace(',', '.')
+      );
+      const valorTotalEsperado = valorUnitario * quantidadeEsperada;
+
+      cy.log(` Valor base capturado: R$ ${valorUnitario.toFixed(2)}`);
+      cy.log(` Quantidade esperada do env: ${quantidadeEsperada}`);
+      cy.log(` Valor total esperado (unitário x quantidade): R$ ${valorTotalEsperado.toFixed(2)}`);
+
+      cy.get('#sc-subtotal-amount-activecart .sc-price.sc-white-space-nowrap', { timeout: 10000 })
+        .invoke('text')
+        .then((textoActiveCart) => {
+          const valorActiveCart = parseFloat(
+            textoActiveCart.replace('R$', '').replace(/\s/g, '').replace(',', '.')
+          );
+          cy.log(' Subtotal nos detalhes do carrinho (activecart):');
+          cy.log(` Valor exibido: R$ ${valorActiveCart.toFixed(2)}`);
+          expect(valorActiveCart).to.eq(valorTotalEsperado);
+        });
+
+      cy.get('#sc-subtotal-amount-buybox .sc-price.sc-white-space-nowrap', { timeout: 10000 })
+        .invoke('text')
+        .then((textoBuybox) => {
+          const valorBuybox = parseFloat(
+            textoBuybox.replace('R$', '').replace(/\s/g, '').replace(',', '.')
+          );
+          cy.log('Subtotal no fechar pedido (buybox):');
+          cy.log(` Valor exibido: R$ ${valorBuybox.toFixed(2)}`);
+          expect(valorBuybox).to.eq(valorTotalEsperado);
+        });
+    });
 });
-  
+
+
+Cypress.Commands.add('aumentarQuantidadeNoCarrinho', (quantidadeParaAdicionar) => {
+  const quantidadeAtual = Cypress.env('quantidadeCarrinho') || 0;
+  const novaQuantidade = quantidadeAtual + quantidadeParaAdicionar;
+
+  cy.log(`Quantidade atual no env: ${quantidadeAtual}`);
+  cy.log(`Quantidade para adicionar: ${quantidadeParaAdicionar}`);
+  cy.log(`Nova quantidade total no env (após cliques): ${novaQuantidade}`);
+
+  for (let i = 0; i < quantidadeParaAdicionar; i++) {
+    cy.get('[aria-label="Aumentar a quantidade em um"] > .a-icon')
+      .first()
+      .click();
+  }
+
+  cy.contains('#sc-subtotal-label-activecart', `${novaQuantidade} produto`, { timeout: 10000 });
+
+  Cypress.env('quantidadeCarrinho', novaQuantidade);
+});
+
+
+
   
   
