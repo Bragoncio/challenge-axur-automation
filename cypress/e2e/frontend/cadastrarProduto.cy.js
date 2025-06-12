@@ -15,9 +15,20 @@ describe('Testes de Cadastro de Produto', () => {
             cy.selecionarProdutoPorNome(['Huggies', 'Natural Care']);
             cy.adicionarProdutoAoCarrinho(1);
             cy.validarValorCarrinho();        
-            cy.aumentarQuantidadeNoCarrinho(3);
+            cy.alterarQuantidadeNoCarrinho(3, 'adicionar');
             cy.validarValorCarrinho();
           });
     });
+
+    context('Fluxo de Exceção', () => {
+      it('Remover um produto adicionado do Carrinho', () => {
+          cy.buscarProdutoNaAmazon('Huggies Fralda Premium Natural Care M 32 Un');
+          cy.selecionarProdutoPorNome(['Huggies', 'Natural Care']);
+          cy.adicionarProdutoAoCarrinho(1);
+          cy.validarValorCarrinho();        
+          cy.alterarQuantidadeNoCarrinho(2, 'reduzir');
+          cy.contains('foi removido de Carrinho de compras.').should('be.visible');
+        });
+  });
   
 });

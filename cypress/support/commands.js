@@ -124,24 +124,43 @@ Cypress.Commands.add('validarValorCarrinho', () => {
 });
 
 
-Cypress.Commands.add('aumentarQuantidadeNoCarrinho', (quantidadeParaAdicionar) => {
+Cypress.Commands.add('alterarQuantidadeNoCarrinho', (quantidade, acao) => {
+  if (!['adicionar', 'reduzir'].includes(acao)) {
+    throw new Error(`Ação inválida: ${acao}. Use "adicionar" ou "reduzir".`);
+  }
+
   const quantidadeAtual = Cypress.env('quantidadeCarrinho') || 0;
-  const novaQuantidade = quantidadeAtual + quantidadeParaAdicionar;
+
+  let quantidadeDeCliques;
+  let novaQuantidade;
+
+  if (acao === 'adicionar') {
+    quantidadeDeCliques = quantidade;
+    novaQuantidade = quantidadeAtual + quantidade;
+  } else {
+    quantidadeDeCliques = Math.min(quantidade, quantidadeAtual);
+    novaQuantidade = quantidadeAtual - quantidadeDeCliques;
+  }
 
   cy.log(`Quantidade atual no env: ${quantidadeAtual}`);
-  cy.log(`Quantidade para adicionar: ${quantidadeParaAdicionar}`);
+  cy.log(`Ação: ${acao}`);
+  cy.log(`Quantidade solicitada: ${quantidade}`);
+  cy.log(`Cliques que serão realizados: ${quantidadeDeCliques}`);
   cy.log(`Nova quantidade total no env (após cliques): ${novaQuantidade}`);
 
-  for (let i = 0; i < quantidadeParaAdicionar; i++) {
-    cy.get('[aria-label="Aumentar a quantidade em um"] > .a-icon')
-      .first()
-      .click();
+  const seletor = acao === 'adicionar'
+    ? '[aria-label="Aumentar a quantidade em um"] > .a-icon'
+    : '[data-action="a-stepper-decrement"]';
+
+  for (let i = 0; i < quantidadeDeCliques; i++) {
+    cy.get(seletor).first().click();
   }
 
   cy.contains('#sc-subtotal-label-activecart', `${novaQuantidade} produto`, { timeout: 10000 });
 
   Cypress.env('quantidadeCarrinho', novaQuantidade);
 });
+
 
 
 
