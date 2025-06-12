@@ -7,6 +7,7 @@ module.exports = defineConfig({
     baseUrl: "https://www.amazon.com.br",
     viewportWidth: 1920,
     viewportHeight: 1080,
+    chromeWebSecurity: false,
     setupNodeEvents(on, config) {
       // Eventos personalizados aqui, se necessário
     }
