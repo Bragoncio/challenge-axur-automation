@@ -20,3 +20,4 @@ When('adiciono {int} unidade ao carrinho', (qtd) => {
 Then('o valor total do carrinho deve estar correto', () => {
   cy.validarValorCarrinho();
 });
+      cy.contains('foi removido de Carrinho de compras.').should('be.visible');
