@@ -2,24 +2,38 @@ const { defineConfig } = require('cypress');
 const createBundler = require('@bahmutov/cypress-esbuild-preprocessor');
 const addCucumberPreprocessorPlugin = require('@badeball/cypress-cucumber-preprocessor').addCucumberPreprocessorPlugin;
 const createEsbuildPlugin = require('@badeball/cypress-cucumber-preprocessor/esbuild');
+const allureWriter = require('@shelex/cypress-allure-plugin/writer');
 
 module.exports = defineConfig({
   e2e: {
-    baseUrl: "https://www.amazon.com.br",
+    baseUrl: 'https://www.amazon.com.br',
     viewportWidth: 1920,
     viewportHeight: 1080,
     chromeWebSecurity: false,
-    specPattern: "cypress/e2e/features/**/*.feature",
-    supportFile: "cypress/support/e2e.js",
+    specPattern: 'cypress/e2e/features/**/*.feature',
+    supportFile: 'cypress/support/e2e.js',
     async setupNodeEvents(on, config) {
-      await addCucumberPreprocessorPlugin(on, config);
+      await addCucumberPreprocessorPlugin(on, config, {
+        json: {
+          enabled: true,
+          output: 'allure-results',
+        },
+      });
+
       on(
-        "file:preprocessor",
+        'file:preprocessor',
         createBundler({
           plugins: [createEsbuildPlugin.default(config)],
         })
       );
+
+      allureWriter(on, config);
+
       return config;
+    },
+    env: {
+      allureReuseAfterSpec: true,
+      allure: true,
     },
   },
 });

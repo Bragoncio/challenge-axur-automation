@@ -1,3 +1,4 @@
+@regressao
 Feature: Remover produto do carrinho
 
   Scenario: Remover produto após adicionar

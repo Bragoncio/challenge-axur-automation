@@ -9,8 +9,8 @@ When('eu busco por {string}', (produto) => {
   cy.buscarProdutoNaAmazon(produto);
 });
 
-When('seleciono o produto contendo {string} e {string}', (p1, p2) => {
-  cy.selecionarProdutoPorNome([p1, p2]);
+When('seleciono o produto contendo {string} e {string}', (nomeProduto, tipoProduto) => {
+  cy.selecionarProdutoPorNome([nomeProduto, tipoProduto]);
 });
 
 When('adiciono {int} unidade ao carrinho', (qtd) => {
@@ -20,4 +20,3 @@ When('adiciono {int} unidade ao carrinho', (qtd) => {
 Then('o valor total do carrinho deve estar correto', () => {
   cy.validarValorCarrinho();
 });
-      cy.contains('foi removido de Carrinho de compras.').should('be.visible');

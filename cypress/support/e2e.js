@@ -14,8 +14,14 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands/produtoCommands'
+import '@shelex/cypress-allure-plugin';
+import './commands/produtoCommands';
 
 Cypress.on('uncaught:exception', (err, runnable) => {
-    return false;
-  });
+  return false;
+});
+
+Cypress.on('fail', (error, runnable) => {
+  cy.allure().logStep(`Test failed: ${error.message}`);
+  throw error; 
+});

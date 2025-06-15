@@ -1,3 +1,4 @@
+@regressao
 Feature: Adicionar produto ao carrinho
 
   Scenario: Adicionar produto e validar total

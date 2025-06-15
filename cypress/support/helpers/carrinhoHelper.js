@@ -1,4 +1,4 @@
-import { parsePrecoTexto } from '../../utils/parseUtils';
+import { parsePrecoTexto } from '../utils/parseUtils'
 
 export function adicionarProdutoAoCarrinho(quantidadeAdicionar = 1) {
   Cypress.env('quantidadeCarrinho', quantidadeAdicionar);
